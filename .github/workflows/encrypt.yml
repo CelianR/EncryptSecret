@@ -5,19 +5,22 @@ jobs:
   encrypt:
     runs-on: ubuntu-latest
     steps:
+      - name: Download age
+        run: sudo apt-get update && sudo apt-get install -y age
+
       - name: Create file
         run: |
           echo "This is a secret file." > secret.txt
 
       - name: Encrypt file
         run: |
-          echo "$PUBLIC_KEY" > public_key.pem
+          echo "$PUBLIC_KEY" > public_key.txt
           # Ensure the public key exists
-          if [ -z "$(cat public_key.pem)" ]; then
+          if [ -z "$(cat public_key.txt)" ]; then
             echo "Public key is empty"
             exit 1
           fi
-          openssl pkeyutl -encrypt -pubin -in secret.txt -out secret.enc -inkey public_key.pem
+          age -r "$(cat public_key.txt)" -o secret.enc secret.txt
           if [ -z "$(cat secret.enc)" ]; then
             echo "Encryption failed"
             exit 1
